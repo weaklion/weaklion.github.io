@@ -1,0 +1,229 @@
+---
+title: "Next.js 14 App Router 완벽 가이드"
+date: "2024-01-20"
+description: "Next.js 14의 App Router를 활용한 현대적인 웹 애플리케이션 개발 방법을 알아봅니다."
+category: "프론트엔드"
+tags: ["Next.js", "React", "App Router", "TypeScript"]
+author: "WeakLion"
+---
+
+# Next.js 14 App Router 완벽 가이드
+
+Next.js 14의 App Router는 React Server Components를 기반으로 한 새로운 라우팅 시스템입니다. 이 글에서는 App Router의 핵심 개념과 사용법을 알아보겠습니다.
+
+## App Router란?
+
+App Router는 Next.js 13에서 도입되어 14에서 안정화된 새로운 라우팅 시스템입니다. 기존 Pages Router와 비교하여 다음과 같은 장점이 있습니다:
+
+- **서버 컴포넌트 기본 지원**: 성능 최적화와 SEO 개선
+- **레이아웃 시스템**: 중첩된 레이아웃과 템플릿 지원
+- **향상된 데이터 페칭**: 서버에서 직접 데이터 가져오기
+- **스트리밍**: 페이지를 점진적으로 렌더링
+
+## 기본 구조
+
+App Router에서는 `app` 디렉토리를 사용합니다:
+
+```
+app/
+├── layout.tsx      # 루트 레이아웃
+├── page.tsx        # 홈 페이지
+├── about/
+│   └── page.tsx    # /about 페이지
+└── blog/
+    ├── layout.tsx  # 블로그 레이아웃
+    └── [slug]/
+        └── page.tsx # /blog/[slug] 페이지
+```
+
+## 서버 컴포넌트와 클라이언트 컴포넌트
+
+### 서버 컴포넌트 (기본)
+
+```typescript
+// app/posts/page.tsx
+export default async function PostsPage() {
+  const posts = await fetch('https://api.example.com/posts')
+  const data = await posts.json()
+  
+  return (
+    <div>
+      {data.map(post => (
+        <article key={post.id}>
+          <h2>{post.title}</h2>
+          <p>{post.excerpt}</p>
+        </article>
+      ))}
+    </div>
+  )
+}
+```
+
+### 클라이언트 컴포넌트
+
+인터랙티브한 기능이 필요한 경우 `'use client'` 지시어를 사용합니다:
+
+```typescript
+'use client'
+
+import { useState } from 'react'
+
+export function Counter() {
+  const [count, setCount] = useState(0)
+  
+  return (
+    <button onClick={() => setCount(count + 1)}>
+      Count: {count}
+    </button>
+  )
+}
+```
+
+## 데이터 페칭
+
+App Router에서는 다양한 데이터 페칭 패턴을 지원합니다:
+
+### 서버에서 데이터 가져오기
+
+```typescript
+async function getData() {
+  const res = await fetch('https://api.example.com/data', {
+    cache: 'no-store', // 매번 새로운 데이터
+    // cache: 'force-cache', // 빌드 시 캐시
+  })
+  
+  if (!res.ok) {
+    throw new Error('Failed to fetch data')
+  }
+  
+  return res.json()
+}
+
+export default async function Page() {
+  const data = await getData()
+  return <main>{/* 데이터 렌더링 */}</main>
+}
+```
+
+## 레이아웃과 템플릿
+
+### 레이아웃 (layout.tsx)
+
+레이아웃은 여러 페이지 간에 공유되는 UI입니다:
+
+```typescript
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <section>
+      <nav>{/* 네비게이션 */}</nav>
+      <main>{children}</main>
+    </section>
+  )
+}
+```
+
+### 루트 레이아웃
+
+모든 앱에는 필수 루트 레이아웃이 있어야 합니다:
+
+```typescript
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="ko">
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+## 메타데이터
+
+SEO를 위한 메타데이터를 쉽게 설정할 수 있습니다:
+
+```typescript
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: '내 블로그',
+  description: '개발 블로그입니다',
+  openGraph: {
+    title: '내 블로그',
+    description: '개발 블로그입니다',
+    images: ['/og-image.jpg'],
+  },
+}
+
+export default function Page() {
+  return <main>...</main>
+}
+```
+
+## 동적 메타데이터
+
+```typescript
+export async function generateMetadata({ params }): Promise<Metadata> {
+  const post = await getPost(params.id)
+  
+  return {
+    title: post.title,
+    description: post.description,
+  }
+}
+```
+
+## 로딩과 에러 처리
+
+### loading.tsx
+
+```typescript
+export default function Loading() {
+  return <div>로딩 중...</div>
+}
+```
+
+### error.tsx
+
+```typescript
+'use client'
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error
+  reset: () => void
+}) {
+  return (
+    <div>
+      <h2>문제가 발생했습니다!</h2>
+      <button onClick={() => reset()}>다시 시도</button>
+    </div>
+  )
+}
+```
+
+## 정적 생성
+
+```typescript
+export async function generateStaticParams() {
+  const posts = await getPosts()
+  
+  return posts.map((post) => ({
+    slug: post.slug,
+  }))
+}
+```
+
+## 마치며
+
+App Router는 Next.js의 미래입니다. 서버 컴포넌트와 새로운 라우팅 시스템을 활용하면 더 빠르고 효율적인 웹 애플리케이션을 만들 수 있습니다.
+
+다음 프로젝트에서 App Router를 사용해보세요! 🚀

@@ -1,0 +1,258 @@
+---
+title: "TypeScript 실무에서 유용한 팁 10가지"
+date: "2024-01-25"
+description: "TypeScript를 더 효과적으로 사용하기 위한 실용적인 팁들을 소개합니다."
+category: "TypeScript"
+tags: ["TypeScript", "JavaScript", "개발팁"]
+author: "WeakLion"
+---
+
+# TypeScript 실무에서 유용한 팁 10가지
+
+TypeScript를 사용하면서 알아두면 유용한 팁들을 정리했습니다. 실무에서 바로 적용할 수 있는 내용들입니다.
+
+## 1. Utility Types 활용하기
+
+TypeScript는 유용한 Utility Types를 제공합니다:
+
+```typescript
+// Partial: 모든 속성을 선택적으로
+interface User {
+  name: string
+  age: number
+  email: string
+}
+
+type PartialUser = Partial<User>
+// { name?: string; age?: number; email?: string }
+
+// Pick: 특정 속성만 선택
+type UserPreview = Pick<User, 'name' | 'email'>
+// { name: string; email: string }
+
+// Omit: 특정 속성 제외
+type UserWithoutEmail = Omit<User, 'email'>
+// { name: string; age: number }
+
+// Required: 모든 속성을 필수로
+type RequiredUser = Required<PartialUser>
+// { name: string; age: number; email: string }
+```
+
+## 2. Union Type과 Type Guard
+
+```typescript
+type Status = 'success' | 'error' | 'loading'
+
+function handleStatus(status: Status) {
+  switch (status) {
+    case 'success':
+      console.log('성공!')
+      break
+    case 'error':
+      console.log('에러!')
+      break
+    case 'loading':
+      console.log('로딩 중...')
+      break
+  }
+}
+
+// Type Guard
+function isString(value: unknown): value is string {
+  return typeof value === 'string'
+}
+
+function processValue(value: string | number) {
+  if (isString(value)) {
+    // value는 여기서 string 타입
+    console.log(value.toUpperCase())
+  } else {
+    // value는 여기서 number 타입
+    console.log(value.toFixed(2))
+  }
+}
+```
+
+## 3. Generic 활용
+
+```typescript
+// 기본 Generic
+function identity<T>(arg: T): T {
+  return arg
+}
+
+// Generic with constraints
+interface HasLength {
+  length: number
+}
+
+function logLength<T extends HasLength>(arg: T): void {
+  console.log(arg.length)
+}
+
+logLength('hello') // ✅
+logLength([1, 2, 3]) // ✅
+logLength(123) // ❌ Error
+```
+
+## 4. as const로 리터럴 타입 만들기
+
+```typescript
+// 일반적인 방식
+const colors = ['red', 'blue', 'green']
+// type: string[]
+
+// as const 사용
+const colors = ['red', 'blue', 'green'] as const
+// type: readonly ["red", "blue", "green"]
+
+// 실용적인 예시
+const ROUTES = {
+  HOME: '/',
+  ABOUT: '/about',
+  BLOG: '/blog',
+} as const
+
+type Route = typeof ROUTES[keyof typeof ROUTES]
+// type: "/" | "/about" | "/blog"
+```
+
+## 5. Record Type으로 객체 타입 정의
+
+```typescript
+type Role = 'admin' | 'user' | 'guest'
+
+interface Permission {
+  read: boolean
+  write: boolean
+  delete: boolean
+}
+
+const permissions: Record<Role, Permission> = {
+  admin: { read: true, write: true, delete: true },
+  user: { read: true, write: true, delete: false },
+  guest: { read: true, write: false, delete: false },
+}
+```
+
+## 6. Template Literal Types
+
+```typescript
+type Color = 'red' | 'blue' | 'green'
+type Size = 'small' | 'medium' | 'large'
+
+type ColoredSize = `${Color}-${Size}`
+// "red-small" | "red-medium" | "red-large" | 
+// "blue-small" | "blue-medium" | "blue-large" |
+// "green-small" | "green-medium" | "green-large"
+```
+
+## 7. Optional Chaining과 Nullish Coalescing
+
+```typescript
+interface User {
+  name: string
+  address?: {
+    street?: string
+    city?: string
+  }
+}
+
+const user: User = { name: 'John' }
+
+// Optional Chaining
+const city = user.address?.city // string | undefined
+
+// Nullish Coalescing
+const displayCity = user.address?.city ?? '도시 정보 없음'
+```
+
+## 8. Discriminated Unions
+
+```typescript
+interface Success {
+  type: 'success'
+  data: any
+}
+
+interface Error {
+  type: 'error'
+  message: string
+}
+
+interface Loading {
+  type: 'loading'
+}
+
+type Response = Success | Error | Loading
+
+function handleResponse(response: Response) {
+  switch (response.type) {
+    case 'success':
+      // response.data 사용 가능
+      console.log(response.data)
+      break
+    case 'error':
+      // response.message 사용 가능
+      console.error(response.message)
+      break
+    case 'loading':
+      console.log('로딩 중...')
+      break
+  }
+}
+```
+
+## 9. Index Signatures
+
+```typescript
+interface StringMap {
+  [key: string]: string
+}
+
+const translations: StringMap = {
+  hello: '안녕하세요',
+  goodbye: '안녕히 가세요',
+  thanks: '감사합니다',
+}
+
+// 더 구체적인 타입
+interface ApiResponse {
+  status: number
+  [key: string]: string | number
+}
+```
+
+## 10. Type Inference 활용
+
+```typescript
+// 명시적 타입 선언 없이 타입 추론
+const numbers = [1, 2, 3, 4, 5] // number[]
+
+const user = {
+  name: 'John',
+  age: 30,
+  email: 'john@example.com',
+}
+// type: { name: string; age: number; email: string }
+
+// 함수 반환 타입 추론
+function add(a: number, b: number) {
+  return a + b // 반환 타입: number
+}
+
+// 제네릭 타입 추론
+function wrap<T>(value: T) {
+  return { value }
+}
+
+const wrapped = wrap('hello') 
+// type: { value: string }
+```
+
+## 마치며
+
+이 팁들은 TypeScript를 더 효과적으로 사용하는 데 도움이 될 것입니다. 실무에서 자주 사용하는 패턴들이니 꼭 익혀두시기 바랍니다!
+
+TypeScript 공식 문서에서 더 많은 정보를 확인할 수 있습니다: [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)

@@ -1,0 +1,33 @@
+{
+  "name": "weaklion-blog",
+  "version": "1.0.0",
+  "description": "WeakLion의 개발 기술 블로그",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "prebuild": "node scripts/generate-search-index.js",
+    "build": "next build",
+    "start": "next start",
+    "export": "next build && next export",
+    "deploy": "npm run prebuild && next build && touch out/.nojekyll && echo 'weaklion.github.io' > out/CNAME"
+  },
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "next-mdx-remote": "^4.4.1",
+    "gray-matter": "^4.0.3",
+    "reading-time": "^1.5.0",
+    "date-fns": "^3.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.10",
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3"
+  }
+}
