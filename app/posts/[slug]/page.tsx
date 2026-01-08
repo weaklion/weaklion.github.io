@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { serialize } from 'next-mdx-remote/serialize'
 import { getAllPosts, getPostBySlug } from '@/lib/mdx'
 import { MDXContent } from '@/components/MDXContent'
 import type { Metadata } from 'next'
@@ -45,8 +44,6 @@ export default async function PostPage({ params }: PostPageProps) {
   if (!post) {
     notFound()
   }
-
-  const mdxSource = await serialize(post.content)
 
   return (
     <article className="container mx-auto px-4 py-12 max-w-4xl">
@@ -100,7 +97,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
       {/* Content */}
       <div className="prose dark:prose-invert prose-lg max-w-none mb-12">
-        <MDXContent source={mdxSource} />
+        <MDXContent content={post.content} />
       </div>
 
       {/* Footer Navigation */}
