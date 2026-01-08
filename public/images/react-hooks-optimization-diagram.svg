@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-labelledby="optimization-title optimization-desc">
+  <title id="optimization-title">React Hooks 성능 최적화 프로세스</title>
+  <desc id="optimization-desc">React 컴포넌트의 렌더링 최적화 과정을 보여주는 다이어그램</desc>
+  
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="400" y="40" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#2d3748" text-anchor="middle">
+    React Hooks 성능 최적화 흐름
+  </text>
+  
+  <!-- Initial Render -->
+  <g filter="url(#shadow)">
+    <rect x="50" y="100" width="200" height="80" rx="10" fill="url(#grad1)"/>
+    <text x="150" y="130" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">
+      초기 렌더링
+    </text>
+    <text x="150" y="155" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">
+      모든 함수/값 생성
+    </text>
+  </g>
+  
+  <!-- Arrow 1 -->
+  <path d="M 250 140 L 330 140" stroke="#2d3748" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Problem Detection -->
+  <g filter="url(#shadow)">
+    <rect x="330" y="100" width="200" height="80" rx="10" fill="#fc8181"/>
+    <text x="430" y="130" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">
+      성능 문제 발견
+    </text>
+    <text x="430" y="155" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">
+      불필요한 재렌더링
+    </text>
+  </g>
+  
+  <!-- Arrow 2 -->
+  <path d="M 430 180 L 430 250" stroke="#2d3748" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <!-- Optimization Strategy -->
+  <g filter="url(#shadow)">
+    <rect x="330" y="250" width="200" height="80" rx="10" fill="#4299e1"/>
+    <text x="430" y="280" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">
+      최적화 전략 수립
+    </text>
+    <text x="430" y="305" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">
+      React DevTools 분석
+    </text>
+  </g>
+  
+  <!-- useMemo Branch -->
+  <path d="M 330 290 L 150 390" stroke="#2d3748" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <g filter="url(#shadow)">
+    <rect x="50" y="390" width="200" height="100" rx="10" fill="url(#grad2)"/>
+    <text x="150" y="420" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">
+      useMemo
+    </text>
+    <text x="150" y="445" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
+      • 계산 비용이 큰 값
+    </text>
+    <text x="150" y="465" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
+      • 참조 동일성 유지
+    </text>
+  </g>
+  
+  <!-- useCallback Branch -->
+  <path d="M 530 290 L 710 390" stroke="#2d3748" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <g filter="url(#shadow)">
+    <rect x="610" y="390" width="200" height="100" rx="10" fill="url(#grad2)"/>
+    <text x="710" y="420" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">
+      useCallback
+    </text>
+    <text x="710" y="445" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
+      • 함수 재생성 방지
+    </text>
+    <text x="710" y="465" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
+      • 자식 컴포넌트 최적화
+    </text>
+  </g>
+  
+  <!-- React.memo Branch -->
+  <path d="M 430 330 L 430 390" stroke="#2d3748" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <g filter="url(#shadow)">
+    <rect x="330" y="390" width="200" height="100" rx="10" fill="url(#grad2)"/>
+    <text x="430" y="420" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">
+      React.memo
+    </text>
+    <text x="430" y="445" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
+      • 컴포넌트 메모이제이션
+    </text>
+    <text x="430" y="465" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">
+      • props 비교로 재렌더링 방지
+    </text>
+  </g>
+  
+  <!-- Result -->
+  <path d="M 150 490 L 400 540" stroke="#2d3748" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 430 490 L 430 540" stroke="#2d3748" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <path d="M 710 490 L 460 540" stroke="#2d3748" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  
+  <g filter="url(#shadow)">
+    <rect x="300" y="540" width="200" height="50" rx="10" fill="#48bb78"/>
+    <text x="400" y="572" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">
+      최적화된 성능 ✓
+    </text>
+  </g>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#2d3748" />
+    </marker>
+  </defs>
+</svg>

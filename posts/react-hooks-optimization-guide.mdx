@@ -1,0 +1,266 @@
+---
+title: "React Hooks 성능 최적화 완벽 가이드: useMemo와 useCallback 실전 활용법"
+date: "2025-01-08"
+description: "중급 React 개발자를 위한 실전 성능 최적화 가이드. useMemo, useCallback을 활용한 렌더링 최적화와 성능 측정 방법을 코드 예시와 함께 알아봅니다."
+category: "React"
+tags: ["React", "성능최적화", "Hooks", "useMemo", "useCallback", "React.memo", "프론트엔드"]
+author: "WeakLion"
+---
+
+# React Hooks 성능 최적화 완벽 가이드
+
+React 애플리케이션의 성능을 결정하는 가장 중요한 요소는 **불필요한 재렌더링을 최소화**하는 것입니다. 이 글에서는 중급 React 개발자를 위해 `useMemo`와 `useCallback`을 활용한 실전 최적화 기법을 다룹니다.
+
+![React Hooks 성능 최적화 프로세스](/images/react-hooks-optimization-diagram.svg)
+*React Hooks 성능 최적화 흐름도*
+
+## 왜 성능 최적화가 필요한가?
+
+React는 기본적으로 효율적이지만, 컴포넌트 트리가 복잡해지고 상태 관리가 많아질수록 성능 문제가 발생할 수 있습니다. 특히 다음과 같은 상황에서 최적화가 필수적입니다:
+
+- 대량의 데이터를 렌더링하는 리스트
+- 복잡한 계산이 포함된 컴포넌트
+- 빈번한 상태 업데이트가 발생하는 인터랙티브 UI
+
+## 1. useMemo: 계산 비용이 큰 값 메모이제이션
+
+`useMemo`는 **계산 비용이 큰 값**을 메모이제이션하여 불필요한 재계산을 방지합니다.
+
+### 기본 사용법
+
+```typescript
+import { useMemo } from 'react';
+
+function ProductList({ products, filterQuery }) {
+  // ❌ 나쁜 예: 매 렌더링마다 필터링 수행
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(filterQuery.toLowerCase())
+  );
+
+  // ✅ 좋은 예: 의존성 배열의 값이 변경될 때만 재계산
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => 
+      p.name.toLowerCase().includes(filterQuery.toLowerCase())
+    );
+  }, [products, filterQuery]);
+
+  return (
+    <ul>
+      {filteredProducts.map(product => (
+        <li key={product.id}>{product.name}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+### useMemo 활용 팁
+
+**1. 복잡한 계산에만 사용하기**
+```typescript
+// ✅ 적절한 사용: 복잡한 정렬/필터링
+const sortedData = useMemo(() => {
+  return data
+    .filter(item => item.score > 50)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10);
+}, [data]);
+
+// ❌ 과도한 사용: 간단한 연산
+const doubled = useMemo(() => value * 2, [value]); // 불필요
+```
+
+**2. 객체/배열 참조 동일성 유지**
+```typescript
+function Chart({ data }) {
+  // ✅ 차트 옵션 객체를 메모이제이션
+  const chartOptions = useMemo(() => ({
+    responsive: true,
+    scales: { y: { beginAtZero: true } }
+  }), []); // 빈 배열: 한 번만 생성
+
+  return <LineChart data={data} options={chartOptions} />;
+}
+```
+
+## 2. useCallback: 함수 재생성 방지
+
+`useCallback`은 **함수를 메모이제이션**하여 자식 컴포넌트의 불필요한 재렌더링을 방지합니다.
+
+### 기본 사용법
+
+```typescript
+import { useCallback, memo } from 'react';
+
+// 자식 컴포넌트는 React.memo로 감싸기
+const TodoItem = memo(({ todo, onToggle }) => {
+  console.log('렌더링:', todo.text);
+  return (
+    <div onClick={() => onToggle(todo.id)}>
+      {todo.text}
+    </div>
+  );
+});
+
+function TodoList() {
+  const [todos, setTodos] = useState([...]);
+
+  // ❌ 나쁜 예: 매 렌더링마다 새 함수 생성
+  const handleToggle = (id) => {
+    setTodos(todos.map(t => 
+      t.id === id ? { ...t, completed: !t.completed } : t
+    ));
+  };
+
+  // ✅ 좋은 예: 함수를 메모이제이션
+  const handleToggle = useCallback((id) => {
+    setTodos(todos.map(t => 
+      t.id === id ? { ...t, completed: !t.completed } : t
+    ));
+  }, [todos]);
+
+  return (
+    <div>
+      {todos.map(todo => (
+        <TodoItem key={todo.id} todo={todo} onToggle={handleToggle} />
+      ))}
+    </div>
+  );
+}
+```
+
+### useCallback 활용 팁
+
+**1. React.memo와 함께 사용**
+```typescript
+// 자식 컴포넌트
+const ExpensiveComponent = memo(({ data, onAction }) => {
+  // 복잡한 렌더링 로직
+  return <div>...</div>;
+});
+
+// 부모 컴포넌트
+function Parent() {
+  const [count, setCount] = useState(0);
+
+  // useCallback 없이는 ExpensiveComponent가 매번 재렌더링됨
+  const handleAction = useCallback(() => {
+    console.log('Action performed');
+  }, []); // 의존성 없음: 컴포넌트 생명주기 동안 동일한 함수
+
+  return <ExpensiveComponent data={data} onAction={handleAction} />;
+}
+```
+
+**2. 함수형 업데이트로 의존성 최소화**
+```typescript
+// ❌ 의존성에 state 포함
+const increment = useCallback(() => {
+  setCount(count + 1);
+}, [count]); // count가 바뀔 때마다 새 함수 생성
+
+// ✅ 함수형 업데이트 사용
+const increment = useCallback(() => {
+  setCount(prev => prev + 1);
+}, []); // 의존성 없음: 진정한 메모이제이션
+```
+
+## 3. React.memo로 컴포넌트 메모이제이션
+
+```typescript
+// 기본 사용
+const UserCard = memo(({ user }) => {
+  return <div>{user.name}</div>;
+});
+
+// 커스텀 비교 함수
+const UserCard = memo(({ user, theme }) => {
+  return <div className={theme}>{user.name}</div>;
+}, (prevProps, nextProps) => {
+  // true를 반환하면 재렌더링 건너뜀
+  return prevProps.user.id === nextProps.user.id &&
+         prevProps.theme === nextProps.theme;
+});
+```
+
+## 성능 측정 방법
+
+### 1. React DevTools Profiler
+
+```typescript
+import { Profiler } from 'react';
+
+function onRenderCallback(
+  id, // 프로파일러 ID
+  phase, // "mount" 또는 "update"
+  actualDuration, // 렌더링 시간
+  baseDuration, // 메모이제이션 없는 예상 시간
+  startTime,
+  commitTime
+) {
+  console.log(`${id} ${phase} 렌더링 시간: ${actualDuration}ms`);
+}
+
+function App() {
+  return (
+    <Profiler id="App" onRender={onRenderCallback}>
+      <YourComponent />
+    </Profiler>
+  );
+}
+```
+
+### 2. Chrome DevTools Performance
+
+1. Chrome DevTools 열기 (F12)
+2. Performance 탭 선택
+3. 녹화 시작 후 인터랙션 수행
+4. User Timing API로 렌더링 시간 확인
+
+### 3. 최적화 전후 비교
+
+![성능 비교 차트](/images/performance-comparison-chart.svg)
+*최적화 전후 렌더링 시간 비교*
+
+## 실전 최적화 체크리스트
+
+✅ **측정 먼저**: 항상 성능 문제를 먼저 측정하고 병목 지점 파악  
+✅ **과도한 최적화 주의**: 모든 곳에 useMemo/useCallback 사용 지양  
+✅ **의존성 배열 정확히**: 빠진 의존성은 버그, 불필요한 의존성은 성능 저하  
+✅ **React.memo와 조합**: useCallback만으로는 최적화 효과 없음  
+✅ **ESLint 플러그인 활용**: `eslint-plugin-react-hooks`로 의존성 검증  
+
+## 주의사항
+
+```typescript
+// ❌ 안티패턴 1: 모든 함수에 useCallback
+const simple = useCallback(() => value + 1, [value]); // 불필요
+
+// ❌ 안티패턴 2: 의존성 배열 누락
+const broken = useCallback(() => {
+  console.log(value); // value가 stale
+}, []); // value를 의존성에 추가해야 함
+
+// ❌ 안티패턴 3: useMemo 내부에서 side effect
+const bad = useMemo(() => {
+  fetchData(); // ❌ 사이드 이펙트는 useEffect에서
+  return processedData;
+}, [data]);
+```
+
+## 결론
+
+React Hooks 성능 최적화는 **측정-분석-개선**의 반복입니다. 무분별한 최적화보다는 실제 병목 지점을 파악하고, useMemo와 useCallback을 **전략적으로** 활용하는 것이 중요합니다.
+
+다음 단계로 React DevTools Profiler를 설치하고, 여러분의 애플리케이션에서 가장 느린 컴포넌트를 찾아보세요. 실제 성능 개선 결과를 확인하면서 최적화의 효과를 체감할 수 있을 것입니다.
+
+---
+
+**참고 자료**
+- [React 공식 문서: useMemo](https://react.dev/reference/react/useMemo)
+- [React 공식 문서: useCallback](https://react.dev/reference/react/useCallback)
+- [React DevTools Profiler 가이드](https://react.dev/learn/react-developer-tools)
+
+**관련 포스트**
+- [Next.js 성능 최적화 완벽 가이드](#)
+- [TypeScript와 함께하는 React 타입 안전성 높이기](#)
