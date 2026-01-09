@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useTheme } from 'next-themes'
 
 interface CommentsProps {
   repo: string // 'username/repo' 형식
@@ -9,7 +8,6 @@ interface CommentsProps {
 
 export function Comments({ repo }: CommentsProps) {
   const commentsRef = useRef<HTMLDivElement>(null)
-  const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   
   // 클라이언트 사이드에서만 렌더링
@@ -17,15 +15,15 @@ export function Comments({ repo }: CommentsProps) {
     setMounted(true)
   }, [])
   
+  // Utterances 초기 로드 (한 번만)
   useEffect(() => {
     if (!mounted || !commentsRef.current) return
     
     const currentRef = commentsRef.current
     
-    // 기존 utterances 제거
-    const existingIframe = currentRef.querySelector('.utterances')
-    if (existingIframe) {
-      existingIframe.remove()
+    // 이미 로드되어 있다면 건너뛰기
+    if (currentRef.querySelector('.utterances')) {
+      return
     }
     
     // Utterances 스크립트 생성
@@ -34,7 +32,7 @@ export function Comments({ repo }: CommentsProps) {
     script.setAttribute('repo', repo)
     script.setAttribute('issue-term', 'pathname')
     script.setAttribute('label', '💬 댓글')
-    script.setAttribute('theme', resolvedTheme === 'dark' ? 'github-dark' : 'github-light')
+    script.setAttribute('theme', 'preferred-color-scheme') // 시스템 테마 자동 감지
     script.setAttribute('crossorigin', 'anonymous')
     script.async = true
     
@@ -44,17 +42,7 @@ export function Comments({ repo }: CommentsProps) {
     } catch (error) {
       console.error('Utterances script loading error:', error)
     }
-    
-    // Cleanup
-    return () => {
-      if (currentRef) {
-        const iframe = currentRef.querySelector('.utterances')
-        if (iframe) {
-          iframe.remove()
-        }
-      }
-    }
-  }, [repo, resolvedTheme, mounted])
+  }, [repo, mounted]) // resolvedTheme 제거 - preferred-color-scheme으로 자동 처리
   
   if (!mounted) {
     return (
