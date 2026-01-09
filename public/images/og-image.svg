@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="og-title og-desc">
+  <title id="og-title">WeakLion 기술 블로그</title>
+  <desc id="og-desc">프론트엔드 개발, React, Next.js, TypeScript 기술 블로그</desc>
+  
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
+    </linearGradient>
+    
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <pattern id="dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="rgba(255,255,255,0.1)"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+  
+  <!-- Decorative Elements -->
+  <circle cx="100" cy="100" r="150" fill="rgba(255,255,255,0.05)"/>
+  <circle cx="1100" cy="530" r="200" fill="rgba(255,255,255,0.05)"/>
+  
+  <!-- Code Symbol -->
+  <g transform="translate(100, 200)">
+    <text font-family="'Courier New', monospace" font-size="120" fill="rgba(255,255,255,0.2)" font-weight="bold">
+      &lt;/&gt;
+    </text>
+  </g>
+  
+  <!-- Logo/Brand Area -->
+  <g transform="translate(100, 150)">
+    <!-- Icon -->
+    <rect x="0" y="0" width="80" height="80" rx="20" fill="rgba(255,255,255,0.15)" filter="url(#glow)"/>
+    <text x="40" y="58" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">
+      W
+    </text>
+  </g>
+  
+  <!-- Main Title -->
+  <text x="100" y="300" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="white" filter="url(#glow)">
+    WeakLion
+  </text>
+  
+  <text x="100" y="360" font-family="Arial, sans-serif" font-size="48" font-weight="600" fill="rgba(255,255,255,0.95)">
+    기술 블로그
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="100" y="430" font-family="Arial, sans-serif" font-size="28" fill="rgba(255,255,255,0.85)">
+    React · Next.js · TypeScript
+  </text>
+  
+  <text x="100" y="470" font-family="Arial, sans-serif" font-size="24" fill="rgba(255,255,255,0.75)">
+    프론트엔드 개발 이야기
+  </text>
+  
+  <!-- Bottom Badge -->
+  <g transform="translate(100, 530)">
+    <rect x="0" y="0" width="240" height="50" rx="25" fill="rgba(255,255,255,0.2)"/>
+    <text x="120" y="33" font-family="Arial, sans-serif" font-size="20" font-weight="600" fill="white" text-anchor="middle">
+      weaklion.github.io
+    </text>
+  </g>
+  
+  <!-- Tech Stack Icons (simplified) -->
+  <g transform="translate(850, 200)">
+    <!-- React -->
+    <circle cx="0" cy="0" r="35" fill="rgba(255,255,255,0.15)"/>
+    <text x="0" y="12" font-family="Arial, sans-serif" font-size="28" fill="white" text-anchor="middle">⚛</text>
+    
+    <!-- Next.js -->
+    <circle cx="100" cy="0" r="35" fill="rgba(255,255,255,0.15)"/>
+    <text x="100" y="12" font-family="Arial, sans-serif" font-size="28" fill="white" text-anchor="middle">▲</text>
+    
+    <!-- TypeScript -->
+    <circle cx="200" cy="0" r="35" fill="rgba(255,255,255,0.15)"/>
+    <text x="200" y="12" font-family="Arial, sans-serif" font-size="28" fill="white" text-anchor="middle">TS</text>
+  </g>
+  
+  <!-- Decorative Code Lines -->
+  <g transform="translate(850, 320)" opacity="0.3">
+    <rect x="0" y="0" width="280" height="8" rx="4" fill="white"/>
+    <rect x="0" y="30" width="220" height="8" rx="4" fill="white"/>
+    <rect x="0" y="60" width="250" height="8" rx="4" fill="white"/>
+    <rect x="0" y="90" width="180" height="8" rx="4" fill="white"/>
+  </g>
+</svg>

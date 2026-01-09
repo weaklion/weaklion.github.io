@@ -1,3 +1,23 @@
+# 모든 검색엔진 허용
 User-agent: *
 Allow: /
+
+# 크롤링 제외할 경로 (필요시)
+# Disallow: /api/
+# Disallow: /admin/
+
+# 크롤링 속도 조절 (선택사항)
+Crawl-delay: 1
+
+# Sitemap 위치
 Sitemap: https://weaklion.github.io/sitemap.xml
+
+# 특정 봇 설정 (선택사항)
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
