@@ -1,6 +1,6 @@
 # WeakLion 기술 블로그 📚
 
-Next.js 14와 TypeScript로 만든 현대적인 개발 기술 블로그입니다.
+Next.js 14와 TypeScript와 Claude AI로 만든 현대적인 개발 기술 블로그입니다.
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
@@ -116,7 +116,7 @@ colors: {
 
 ```css
 :root {
-  --font-pretendard: 'Your Font', system-ui, sans-serif;
+  --font-pretendard: "Your Font", system-ui, sans-serif;
 }
 ```
 
@@ -160,18 +160,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          
+          node-version: "18"
+
       - name: Install dependencies
         run: npm install
-        
+
       - name: Build
         run: npm run build
-        
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -249,7 +249,7 @@ weaklion.github.io/
 
 - 블로그: [https://weaklion.github.io](https://weaklion.github.io)
 - GitHub: [@weaklion](https://github.com/weaklion)
-- Email: your-email@example.com
+- Email: weaklion@naver.com
 
 ## 🙏 감사의 말
 
