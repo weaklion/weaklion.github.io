@@ -53,6 +53,12 @@ export function Header() {
           >
             카테고리
           </Link>
+          <Link 
+            href="/resume" 
+            className="text-sm font-medium hover:text-primary-500 transition-colors hidden sm:block"
+          >
+            Resume
+          </Link>
           <Search />
           <button
             onClick={toggleDarkMode}
