@@ -558,7 +558,6 @@ export default function ResumePage() {
                   "Zustand",
                   "Node.js",
                   "Express",
-                  "Monorepo",
                 ].map((tech) => (
                   <span
                     key={tech}

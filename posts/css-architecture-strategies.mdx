@@ -1,0 +1,149 @@
+---
+title: "현대적인 웹 애플리케이션을 위한 확장 가능한 CSS 아키텍처"
+date: "2026-02-09"
+description: "CSS Modules, CSS-in-JS, Tailwind CSS 등 다양한 CSS 방법론을 비교하고, 프로젝트 규모와 요구사항에 맞는 최적의 스타일링 전략을 선택하는 방법을 알아봅니다."
+category: "프론트엔드"
+tags:
+  [
+    "CSS",
+    "Architecture",
+    "Tailwind",
+    "CSS-in-JS",
+    "Styled-components",
+    "Best Practices",
+  ]
+author: "WeakLion"
+image: "/css-architecture.png"
+---
+
+# 현대적인 웹 애플리케이션을 위한 확장 가능한 CSS 아키텍처
+
+![CSS Architecture Strategies](/css-architecture.png)
+
+프론트엔드 개발 생태계가 발전함에 따라 CSS를 작성하고 관리하는 방식도 다양해졌습니다. 더 이상 하나의 거대한 CSS 파일로 모든 스타일을 관리하지 않습니다. 이 글에서는 현대적인 웹 개발에서 주로 사용되는 세 가지 주요 CSS 아키텍처를 비교하고, 상황에 맞는 선택 기준을 제시합니다.
+
+## 1. CSS Modules: 지역 스코프의 안정성
+
+CSS Modules는 CSS 클래스 이름을 로컬 스코프로 제한하여 클래스 이름 충돌 문제를 해결하는 방식입니다.
+
+### 장점
+
+- **스코프 분리**: 컴포넌트 단위로 스타일이 격리되어 사이드 이펙트가 없습니다.
+- **재사용성**: 기존 CSS 문법을 그대로 사용하므로 러닝 커브가 낮습니다.
+- **명시적 의존성**: 어떤 스타일이 어떤 컴포넌트에 사용되는지 명확합니다.
+
+### 코드 예시
+
+```css
+/* Button.module.css */
+.button {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.primary {
+  background-color: blue;
+  color: white;
+}
+```
+
+```tsx
+// Button.tsx
+import styles from "./Button.module.css";
+
+function Button({ type = "default" }) {
+  return (
+    <button
+      className={`${styles.button} ${type === "primary" ? styles.primary : ""}`}
+    >
+      Click Me
+    </button>
+  );
+}
+```
+
+## 2. CSS-in-JS: 강력한 동적 스타일링
+
+Styled-components나 Emotion과 같은 라이브러리를 사용하여 JavaScript 코드 내에 CSS를 작성하는 방식입니다.
+
+### 장점
+
+- **동적 스타일링**: Props나 상태에 따라 스타일을 쉽게 변경할 수 있습니다.
+- **테마 지원**: JavaScript 변수를 공유하여 일관된 디자인 시스템을 구축하기 쉽습니다.
+- **자동 벤더 프리픽싱**: 브라우저 호환성을 자동으로 처리해줍니다.
+
+### 단점
+
+- **런타임 오버헤드**: 스타일을 생성하고 주입하는 과정에서 약간의 성능 비용이 발생할 수 있습니다.
+- **번들 크기 증가**: 라이브러리 자체가 번들에 포함됩니다.
+
+### 코드 예시
+
+```tsx
+import styled from "styled-components";
+
+const Button = styled.button<{ $primary?: boolean }>`
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: bold;
+  background-color: ${(props) => (props.$primary ? "blue" : "white")};
+  color: ${(props) => (props.$primary ? "white" : "blue")};
+  border: 1px solid blue;
+`;
+
+function App() {
+  return (
+    <div>
+      <Button>Default</Button>
+      <Button $primary>Primary</Button>
+    </div>
+  );
+}
+```
+
+## 3. Utility-First CSS (Tailwind CSS): 빠른 개발 속도
+
+미리 정의된 유틸리티 클래스들을 조합하여 스타일을 작성하는 방식입니다. 최근 가장 각광받는 방식 중 하나입니다.
+
+### 장점
+
+- **빠른 개발**: CSS 파일을 오가며 컨텍스트 스위칭을 할 필요가 없습니다.
+- **일관된 디자인**: 미리 정의된 토큰(색상, 간격 등)을 사용하므로 디자인 일관성을 유지하기 쉽습니다.
+- **작은 번들 크기**: 사용하지 않는 클래스는 빌드 시점에 제거(Purge)됩니다.
+
+### 단점
+
+- **가독성**: 클래스 이름이 길어져 HTML이 지저분해 보일 수 있습니다. (하지만 `@apply`나 컴포넌트 분리로 해결 가능)
+- **러닝 커브**: 클래스 이름을 외워야 합니다.
+
+### 코드 예시
+
+```tsx
+function Button({ primary }: { primary?: boolean }) {
+  return (
+    <button
+      className={`
+        px-4 py-2 rounded font-bold transition-colors
+        ${
+          primary
+            ? "bg-blue-600 text-white hover:bg-blue-700"
+            : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
+        }
+      `}
+    >
+      Click Me
+    </button>
+  );
+}
+```
+
+## 결론: 무엇을 선택해야 할까?
+
+정답은 **"프로젝트의 성격과 팀의 선호도에 따라 다르다"**입니다.
+
+1. **디자인 시스템이 엄격하고 동적인 인터랙션이 많다면?** -> **CSS-in-JS**가 유리할 수 있습니다.
+2. **빠른 프로토타이핑과 개발 속도가 중요하다면?** -> **Tailwind CSS**가 최고의 선택입니다.
+3. **기존 CSS에 익숙하고 JS와 스타일을 분리하고 싶다면?** -> **CSS Modules**가 안정적입니다.
+
+최근의 트렌드는 **Tailwind CSS**가 주도하고 있지만, **Zero-runtime CSS-in-JS** (Vanilla Extract 등)와 같은 새로운 흐름도 생겨나고 있습니다. 팀원들과 충분히 논의하여 우리 프로젝트에 가장 적합한 도구를 선택하는 것이 중요합니다.
