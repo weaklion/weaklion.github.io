@@ -1,63 +1,63 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
-import { Search } from './Search'
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { Search } from "./Search";
 
 export function Header() {
-  const [darkMode, setDarkMode] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const [darkMode, setDarkMode] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-    const isDark = localStorage.getItem('darkMode') === 'true'
-    setDarkMode(isDark)
+    setMounted(true);
+    const isDark = localStorage.getItem("darkMode") === "true";
+    setDarkMode(isDark);
     if (isDark) {
-      document.documentElement.classList.add('dark')
+      document.documentElement.classList.add("dark");
     }
-  }, [])
+  }, []);
 
   const toggleDarkMode = () => {
-    const newMode = !darkMode
-    setDarkMode(newMode)
-    localStorage.setItem('darkMode', String(newMode))
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    localStorage.setItem("darkMode", String(newMode));
     if (newMode) {
-      document.documentElement.classList.add('dark')
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark')
+      document.documentElement.classList.remove("dark");
     }
-  }
+  };
 
-  if (!mounted) return null
+  if (!mounted) return null;
 
   return (
     <header className="sticky top-0 z-50 glass-effect border-b border-gray-200 dark:border-gray-800">
       <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="text-2xl font-bold gradient-text hover:opacity-80 transition-opacity"
         >
           WeakLion
         </Link>
 
         <div className="flex items-center gap-6">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="text-sm font-medium hover:text-primary-500 transition-colors hidden sm:block"
           >
             블로그
           </Link>
-          <Link 
-            href="#categories" 
+          <Link
+            href="#categories"
             className="text-sm font-medium hover:text-primary-500 transition-colors hidden sm:block"
           >
             카테고리
           </Link>
-          <Link 
-            href="/resume" 
+          <Link
+            href="/resume"
             className="text-sm font-medium hover:text-primary-500 transition-colors hidden sm:block"
           >
-            Resume
+            포트폴리오
           </Link>
           <Search />
           <button
@@ -78,5 +78,5 @@ export function Header() {
         </div>
       </nav>
     </header>
-  )
+  );
 }
