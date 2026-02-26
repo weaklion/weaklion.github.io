@@ -1,0 +1,267 @@
+---
+title: "피쳐 플래그를 직접 만들어보자 — React에서 A/B 테스트부터 실시간 배포까지"
+date: "2026-02-26"
+description: "재배포 없이 기능을 켜고 끌 수 있는 피쳐 플래그 시스템을 React 빌드 환경에서 직접 구현해본 경험과 방법을 공유합니다."
+category: "프론트엔드"
+tags: ["React", "Feature Flag", "A/B Testing", "Frontend", "Architecture"]
+author: "WeakLion"
+---
+
+> "재배포 없이 기능을 켜고 끌 수 있다면 얼마나 좋을까?"  
+> 그 생각에서 시작해 직접 피쳐 플래그 시스템을 만들었다.
+
+---
+
+## 피쳐 플래그가 뭔데?
+
+피쳐 플래그(Feature Flag), 혹은 피쳐 토글(Feature Toggle)은 **코드 배포 없이 기능의 활성/비활성을 제어하는 메커니즘**이다.
+
+가장 단순한 형태는 이렇다:
+
+```js
+if (flags["new-checkout"]) {
+  return <NewCheckoutFlow />;
+}
+return <LegacyCheckout />;
+```
+
+플래그 값 하나만 바꾸면 사용자에게 보이는 화면이 달라진다. 재배포는 필요 없다.
+
+### 어떤 상황에서 쓰냐
+
+- **점진적 릴리즈** — 새 기능을 전체 사용자가 아닌 10%에게만 먼저 노출
+- **A/B 테스트** — 두 가지 UI를 나눠서 보여주고 전환율 비교
+- **킬 스위치** — 장애 상황에서 문제 기능을 즉시 비활성화
+- **환경 분리** — 개발 서버에서만 보이는 실험적 기능
+
+---
+
+## 왜 직접 만들었냐
+
+LaunchDarkly, Statsig, Unleash 같은 솔루션이 이미 있다. 그런데 몇 가지 이유로 직접 만드는 게 낫다고 판단했다.
+
+**오픈소스 솔루션의 한계:**
+
+- 유료 플랜 없이는 A/B 롤아웃 기능이 제한적
+- 서드파티 SDK를 번들에 포함하면 용량 부담
+- 내 서비스 데이터 구조에 맞게 커스터마이징하기 어려움
+
+요구사항이 세 가지로 명확했기 때문에 직접 구현을 선택했다:
+
+1. A/B 테스트 (사용자별 % 롤아웃)
+2. 환경별 분리 (dev / prod)
+3. 실시간 변경 (재배포 없이)
+
+---
+
+## 설계
+
+파일 구조는 단순하게 가져갔다.
+
+```text
+src/feature-flags/
+├── index.js               ← public exports
+├── FeatureFlagProvider.jsx ← Context + 폴링 로직
+├── hooks.js               ← useFeatureFlag / useFeatureFlags
+└── utils.js               ← 버킷 해시, 환경 감지, 플래그 평가
+```
+
+플래그 하나의 설정 형태는 이렇다:
+
+```js
+// flags.config.js
+export const flagsConfig = {
+  "new-checkout": {
+    enabled: true,
+    rollout: 50, // 50% 사용자에게만 노출
+    environments: ["production"],
+    overrides: {
+      "user-qa-001": true, // QA 계정은 항상 활성화
+    },
+    description: "새 결제 플로우 A/B 테스트",
+  },
+};
+```
+
+---
+
+## 핵심 구현 1 — A/B 롤아웃 (결정론적 해시)
+
+가장 중요하게 생각한 부분이다. 단순히 `Math.random()`으로 처리하면 **같은 사용자가 새로고침할 때마다 다른 버킷에 들어간다.** 이러면 A/B 테스트가 의미 없어진다.
+
+해결책은 `userId + flagKey`를 해시해서 0~99 사이의 **결정론적 버킷**을 구하는 것이다.
+
+```js
+export function getUserBucket(userId, flagKey) {
+  const str = `${userId}:${flagKey}`;
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // 32bit integer
+  }
+  return Math.abs(hash) % 100;
+}
+```
+
+`user-abc-123:new-checkout` 이 문자열을 해시하면 항상 같은 숫자(예: 42)가 나온다. rollout이 50이면 0~49 버킷에 해당하는 사용자만 기능을 본다.
+
+덕분에 같은 사용자는 **항상 같은 경험**을 하게 된다. 새로고침해도, 다른 기기로 접속해도.
+
+---
+
+## 핵심 구현 2 — 플래그 평가 로직
+
+```js
+export function evaluateFlag(config, userId, flagKey, env) {
+  // 1. 플래그 자체가 꺼져 있으면 끝
+  if (!config.enabled) return false;
+
+  // 2. 환경 체크
+  if (config.environments?.length > 0) {
+    if (!config.environments.includes(env)) return false;
+  }
+
+  // 3. userId 오버라이드 (QA, 특정 사용자 강제 설정)
+  if (userId && config.overrides?.[userId] !== undefined) {
+    return config.overrides[userId];
+  }
+
+  // 4. A/B 롤아웃
+  const rollout = config.rollout ?? 100;
+  if (!userId) return Math.random() * 100 < rollout; // userId 없으면 랜덤
+  return getUserBucket(userId, flagKey) < rollout;
+}
+```
+
+우선순위는 이렇다: **enabled → 환경 → 오버라이드 → 롤아웃**
+
+오버라이드가 롤아웃보다 우선하기 때문에, QA 계정은 rollout이 10%여도 항상 기능을 볼 수 있다.
+
+---
+
+## 핵심 구현 3 — 실시간 변경 (폴링)
+
+재배포 없이 플래그를 바꾸려면 서버에서 config를 주기적으로 받아와야 한다. `FeatureFlagProvider`에서 폴링을 처리한다.
+
+```jsx
+export function FeatureFlagProvider({
+  initialFlags,
+  remoteUrl,
+  pollingInterval = 30_000, // 기본 30초
+  userId,
+  children,
+}) {
+  const [flags, setFlags] = useState(initialFlags);
+
+  useEffect(() => {
+    if (!remoteUrl) return;
+
+    const fetchFlags = async () => {
+      const res = await fetch(remoteUrl);
+      const data = await res.json();
+      setFlags(data);
+    };
+
+    fetchFlags();
+    const id = setInterval(fetchFlags, pollingInterval);
+    return () => clearInterval(id);
+  }, [remoteUrl, pollingInterval]);
+
+  // ...
+}
+```
+
+서버는 단순히 JSON만 내려주면 된다:
+
+```json
+// GET /api/feature-flags
+{
+  "new-checkout": {
+    "enabled": true,
+    "rollout": 80
+  }
+}
+```
+
+이 값을 바꾸면 최대 30초 내에 모든 클라이언트에 반영된다. 배포 없이.
+
+> SSE(Server-Sent Events)나 WebSocket을 쓰면 즉각 반영도 가능하지만, 대부분의 경우 30초 딜레이는 충분히 납득 가능한 트레이드오프라고 봤다.
+
+---
+
+## 사용법
+
+### App.jsx — Provider 설정
+
+```jsx
+import { FeatureFlagProvider } from "./feature-flags";
+import { flagsConfig } from "./flags.config";
+
+export default function App() {
+  return (
+    <FeatureFlagProvider
+      initialFlags={flagsConfig}
+      userId={currentUser.id}
+      remoteUrl="/api/feature-flags"
+      pollingInterval={30_000}
+    >
+      <Router />
+    </FeatureFlagProvider>
+  );
+}
+```
+
+### 컴포넌트에서 사용
+
+```jsx
+import { useFeatureFlag } from "./feature-flags";
+
+function CheckoutPage() {
+  const isNewCheckout = useFeatureFlag("new-checkout");
+
+  return isNewCheckout ? <NewCheckoutFlow /> : <LegacyCheckout />;
+}
+```
+
+여러 플래그를 한 번에 조회할 때:
+
+```jsx
+import { useFeatureFlags } from "./feature-flags";
+
+function Layout() {
+  const { "dark-mode": hasDarkMode, "beta-analytics": hasBeta } =
+    useFeatureFlags(["dark-mode", "beta-analytics"]);
+
+  return (
+    <div className={hasDarkMode ? "theme-dark" : "theme-light"}>
+      {hasBeta && <BetaBanner />}
+    </div>
+  );
+}
+```
+
+---
+
+## 만들면서 고민했던 것들
+
+**userId 없는 경우의 롤아웃**  
+로그인 전 사용자는 userId가 없다. 이 경우 `Math.random()`을 쓰는데, 새로고침하면 버킷이 달라진다. 완전한 해결책은 localStorage에 임시 익명 ID를 생성해 저장하는 것이다. 현재 구현에서는 의도적으로 제외했다 — 로그인 사용자 대상 플래그만 쓰기 때문에.
+
+**폴링 vs SSE**  
+폴링은 구현이 단순하고 서버 부담도 예측 가능하다. 대신 최대 `pollingInterval`만큼 딜레이가 생긴다. 킬 스위치처럼 즉각 반영이 중요한 경우엔 SSE가 낫다. 현재는 폴링으로 충분하다고 판단했다.
+
+**메모리 낭비**  
+리렌더링 최적화를 위해 `isEnabled`를 `useCallback`으로 감쌌다. flags나 userId가 바뀌지 않는 한 컴포넌트가 불필요하게 재렌더링되지 않는다.
+
+---
+
+## 마치며
+
+피쳐 플래그는 개념 자체는 단순하지만, 제대로 만들면 배포 리스크를 크게 줄여준다. 기능 단위로 릴리즈를 분리할 수 있고, 장애 시 즉각 롤백할 수 있다.
+
+전체 코드는 [GitHub 링크]에서 확인할 수 있다.
+
+---
+
+_다음 글에서는 관리자 UI(플래그를 GUI로 켜고 끄는 대시보드)를 만드는 과정을 다룰 예정이다._

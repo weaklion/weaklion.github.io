@@ -155,7 +155,7 @@ export default function ResumePage() {
                     rel="noopener noreferrer"
                     className="text-blue-500 hover:underline"
                   >
-                    Android
+                    https://play.google.com/store/apps/details?id=co.griplabs.newming.app&hl=ko
                   </a>
                   <a
                     href="https://apps.apple.com/kr/app/%EB%89%B4%EB%B0%8D-ai-%EB%89%B4%EC%8A%A4-%ED%94%8C%EB%9E%AB%ED%8F%BC/id6448780212"
@@ -163,7 +163,7 @@ export default function ResumePage() {
                     rel="noopener noreferrer"
                     className="text-blue-500 hover:underline"
                   >
-                    iOS
+                    https://apps.apple.com/kr/app/%EB%89%B4%EB%B0%8D-ai-%EB%89%B4%EC%8A%A4-%ED%94%8C%EB%9E%AB%ED%8F%BC/id6448780212
                   </a>
                 </div>
               </div>
@@ -483,7 +483,7 @@ export default function ResumePage() {
                     rel="noopener noreferrer"
                     className="text-blue-500 hover:underline"
                   >
-                    닥스웨이브
+                    https://docswave.com/ko
                   </a>
                 </div>
               </div>
